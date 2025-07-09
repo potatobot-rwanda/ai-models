@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Red Bliss",
+    "synonyms": ["Red Potato", "Red Skinned Potato"]
+  },
+  {
+    "name": "New Potatoes",
+    "synonyms": ["Baby Potatoes", "Young Potatoes"]
+  },
+  {
+    "name": "Fingerling",
+    "synonyms": ["Fingerling Potato"]
+  },
+  {
+    "name": "French Fingerling",
+    "synonyms": ["Pink Fingerling"]
+  },
+  {
+    "name": "Russian Banana",
+    "synonyms": ["Banana Fingerling"]
+  },
+  {
+    "name": "Rose Finn Apple",
+    "synonyms": ["Rose Finn"]
+  },
+  {
+    "name": "Austrian Crescent",
+    "synonyms": ["Crescent Potato"]
+  },
+  {
+    "name": "La Ratte",
+    "synonyms": ["Ratte Potato", "La Ratte Fingerling"]
+  },
+  {
+    "name": "German Butterball",
+    "synonyms": ["Butterball"]
+  },
+  {
+    "name": "Charlotte",
+    "synonyms": ["Charlotte Potato"]
+  },
+  {
+    "name": "Russet Burbank",
+    "synonyms": ["Russet", "Burbank Potato", "Burbank Russet"]
+  },
+  {
+    "name": "Idaho Potato",
+    "synonyms": ["Idaho Russet", "US No. 1 Potato"]
+  },
+  {
+    "name": "King Edward",
+    "synonyms": ["King Edward VII Potato"]
+  },
+  {
+    "name": "Maris Piper",
+    "synonyms": ["Piper Potato"]
+  },
+  {
+    "name": "Desiree",
+    "synonyms": ["Desiree Potato"]
+  },
+  {
+    "name": "Kennebec",
+    "synonyms": ["Kennebec White Potato"]
+  },
+  {
+    "name": "Shepody",
+    "synonyms": ["Shepody Potato"]
+  },
+  {
+    "name": "Bintje",
+    "synonyms": ["Bintje Potato"]
+  },
+  {
+    "name": "Ranger Russet",
+    "synonyms": ["Ranger Potato"]
+  },
+  {
+    "name": "Atlantic",
+    "synonyms": ["Atlantic Potato"]
+  },
+  {
+    "name": "Yukon Gold",
+    "synonyms": ["Yukon", "Gold Potato"]
+  },
+  {
+    "name": "Norland",
+    "synonyms": ["Red Norland"]
+  },
+  {
+    "name": "Red Pontiac",
+    "synonyms": ["Pontiac Red", "Pontiac Potato"]
+  },
+  {
+    "name": "White Rose",
+    "synonyms": ["Rose White", "California White"]
+  },
+  {
+    "name": "Adirondack Blue",
+    "synonyms": ["Blue Potato", "Adirondack Blue Potato"]
+  },
+  {
+    "name": "Adirondack Red",
+    "synonyms": ["Red Adirondack"]
+  },
+  {
+    "name": "Carola",
+    "synonyms": ["Carola Potato"]
+  },
+  {
+    "name": "Nicola",
+    "synonyms": ["Nicola Potato"]
+  },
+  {
+    "name": "Purple Majesty",
+    "synonyms": ["Purple Potato", "Majesty Potato"]
+  },
+  {
+    "name": "Vitelotte",
+    "synonyms": ["Vitelotte Noire", "French Blue Potato", "Truffle Potato"]
+  }
+]
