@@ -1,3 +1,11 @@
+"""
+NER based on LLMs.
+
+Run like this:
+
+python -m llm_ner.llm_ner
+"""
+
 import os
 import getpass
 import logging
@@ -5,6 +13,7 @@ from logging.handlers import RotatingFileHandler
 import json
 import concurrent.futures
 from typing import List, Any, Tuple
+from dotenv import load_dotenv
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain.callbacks.base import BaseCallbackHandler
@@ -16,6 +25,9 @@ from langchain_community.cache import SQLiteCache
 from langchain.globals import set_llm_cache
 set_llm_cache(SQLiteCache(database_path=".langchain.db"))
 
+load_dotenv(
+    dotenv_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+)
 API_KEY = os.getenv("OPENAI_API_KEY")
 if not API_KEY:
     API_KEY = getpass.getpass("Enter your OPENAI_API_KEY: ")
@@ -37,14 +49,6 @@ def init_logging(console_level = logging.WARNING, file_level = logging.INFO):
     file_handler.setFormatter(formatter)
     file_handler.setLevel(file_level)
     logger.addHandler(file_handler)
-
-
-def init_llm():
-    llm = ChatOpenAI(
-        model="gpt-4o",
-        openai_api_key=API_KEY,
-    )
-    return llm
 
 # https://python.langchain.com/v0.1/docs/modules/callbacks/
 # custom langchain callback to log llm details
@@ -129,37 +133,47 @@ class NERModel:
             "end_index": end_index
         }
 
-# execute all ners in parallel to reduce waiting time
-def run_ner_parallel(models, user_message, chat_history):
+# instantiate and query the indiviudal NER models together
+class LLMNER:
 
-    # helper function for run_ner_parallel: execute a single ner model
-    def run_ner(params):
-        model, user_message, chat_history = params
-        return model.detect(user_message, chat_history)
+    def __init__(self, llm="gpt-4o", entity_types = ["last_spray_date", "location", "potato_variety"]):
+        self.llm = ChatOpenAI(
+            model="gpt-4o",
+            openai_api_key=API_KEY,
+        )
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(models)) as executor:
-        params = [(model, user_message, chat_history) for model in models]
-        results = executor.map(run_ner, params)
-        results = list(filter(lambda x:x is not None, results))
-        return results
+        self.models = []
+        for entity_type in entity_types:
+            prompt = open(f"llm_ner/prompts/nlu_{entity_type}.txt").read()
+            model = NERModel(self.llm, entity_type, prompt)
+            self.models.append(model)
+
+    # execute all ners in parallel to reduce waiting time
+    def ner(self, user_message, chat_history):
+
+        # helper function for run_ner_parallel: execute a single ner model
+        def run_ner(params):
+            model, user_message, chat_history = params
+            return model.detect(user_message, chat_history)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.models)) as executor:
+            params = [(model, user_message, chat_history) for model in self.models]
+            results = executor.map(run_ner, params)
+            results = list(filter(lambda x:x is not None, results))
+            return results
 
 # run this script to run llm ner directly
 if __name__ == "__main__":
 
     init_logging()
 
-    entity_types = ["last_spray_date", "location", "plant_date", "potato_variety"]
-    llm = init_llm()
-    models = []
-    for entity_type in entity_types:
-        prompt = open(f"prompts/nlu_{entity_type}.txt").read()
-        model = NERModel(llm, entity_type, prompt)
-        models.append(model)
+    test_data = json.load(open("../data/english/ner/ner.json"))[0:1]
 
-    test_data = json.load(open("../../data/english/ner/ner.json"))[0:1]
+    ner = LLMNER()
     for sample in test_data:
         
         print(sample)
         chat_history = ["Chatbot: " + sample["preceeding_sentence"]]
-        results = run_ner_parallel(models, sample["input_sentence"], chat_history) 
+        results = ner.ner(sample["input_sentence"], chat_history) 
         print(results)
+

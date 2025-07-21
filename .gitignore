@@ -2,6 +2,7 @@ old
 cache_dir 
 outputs/
 runs/
+.langchain.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
