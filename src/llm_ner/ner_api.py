@@ -2,8 +2,11 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
 import logging
+import os
 
+from langchain_openai.chat_models.base import ChatOpenAI
 from llm_ner.llm_ner import LLMNER, init_logging
+from llm_ner.util import load_openai_api_key
 
 init_logging()
 
@@ -12,8 +15,20 @@ class NerRequest(BaseModel):
     chat_history: List[str]
 
 app = FastAPI()
+ner_models = None
 
-ner_models = LLMNER()
+def init_ner(llm = None):
+    global ner_models
+    if llm is None:
+        llm = ChatOpenAI(
+            model="gpt-4o",
+            openai_api_key=load_openai_api_key(),
+        )
+    ner_models = LLMNER(llm)
+
+# we add this switch so we can initialize the NER for unit testing with a mock llm
+if os.getenv('ENV', 'production') == 'production':
+    init_ner()
 
 @app.post("/api/ner")
 async def ner_request(nerRequest : NerRequest):

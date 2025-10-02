@@ -7,75 +7,22 @@ python -m llm_ner.llm_ner
 """
 
 import os
-import getpass
-import logging
-from logging.handlers import RotatingFileHandler
 import json
 import concurrent.futures
 from typing import List, Any, Tuple
-from dotenv import load_dotenv
+import logging
 
 from langchain_core.output_parsers import StrOutputParser
-from langchain.callbacks.base import BaseCallbackHandler
 from langchain_core.prompts import PromptTemplate
-from langchain_core.outputs import LLMResult
-from langchain_openai import ChatOpenAI
+from langchain_core.language_models.chat_models import BaseChatModel
 
 from langchain_community.cache import SQLiteCache
 from langchain.globals import set_llm_cache
 set_llm_cache(SQLiteCache(database_path=".langchain.db"))
 
-load_dotenv(
-    dotenv_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
-)
-API_KEY = os.getenv("OPENAI_API_KEY")
-if not API_KEY:
-    API_KEY = getpass.getpass("Enter your OPENAI_API_KEY: ")
+from llm_ner.util import CustomCallback, load_openai_api_key, init_logging
 
-
-def init_logging(console_level = logging.WARNING, file_level = logging.INFO):
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-
-    formatter = logging.Formatter(
-        "%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s"
-    )
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    console_handler.setLevel(console_level)
-    logger.addHandler(console_handler)
-
-    file_handler = RotatingFileHandler('app.log', maxBytes=1024 * 1024, backupCount=5)
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(file_level)
-    logger.addHandler(file_handler)
-
-# https://python.langchain.com/v0.1/docs/modules/callbacks/
-# custom langchain callback to log llm details
-class CustomCallback(BaseCallbackHandler):
-
-    def __init__(self):
-        self.messages = {}
-
-    def on_llm_start(
-        self, serialized: dict[str, Any], prompts: list[str], **kwargs: Any
-    ) -> Any:
-        self.messages["on_llm_start_prompts"] = prompts
-        self.messages["on_llm_start_kwargs"] = kwargs
-
-    def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
-
-        llm_generation = []
-        for gen in response.generations:
-            for gen2 in gen:
-                llm_generation.append({
-                    "text": gen2.text,
-                    "generation_info": gen2.generation_info
-                })
-
-        self.messages["on_llm_end_response"] = llm_generation
-        self.messages["on_llm_end_kwargs"] = kwargs
-
+# ner model for a single named entity class
 class NERModel:
 
     def __init__(self, llm, entity_class : str, prompt : str):
@@ -136,12 +83,10 @@ class NERModel:
 # instantiate and query the indiviudal NER models together
 class LLMNER:
 
-    def __init__(self, llm="gpt-4o", entity_types = ["last_spray_date", "location", "potato_variety"]):
-        self.llm = ChatOpenAI(
-            model="gpt-4o",
-            openai_api_key=API_KEY,
-        )
+    def __init__(self, llm : BaseChatModel, entity_types = ["last_spray_date", "location", "potato_variety"]):
 
+        self.llm = llm
+        
         self.models = []
         for entity_type in entity_types:
             prompt = open(f"llm_ner/prompts/nlu_{entity_type}.txt").read()
@@ -169,7 +114,8 @@ if __name__ == "__main__":
 
     test_data = json.load(open("../data/english/ner/ner.json"))[0:1]
 
-    ner = LLMNER()
+    api_key = load_openai_api_key()
+    ner = LLMNER(api_key)
     for sample in test_data:
         
         print(sample)

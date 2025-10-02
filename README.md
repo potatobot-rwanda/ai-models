@@ -8,7 +8,7 @@ First, install Python (3.9 or higher)
 
 **1. Prerequisites**
 
-* Install Python 3.11 or higher.
+* Install Python 3.9 or higher.
 * Acquire your OpenAI API Key.
 * Install Git
 
@@ -50,10 +50,9 @@ cd src
 uvicorn ner_api:app --reload --port 8001
 ```
 
-The HTTP API will be available at http://localhost:8001
+The HTTP API will be available at http://localhost:8002
 
 ### Build and run the docker container
-
 
 ```
 # build the docker container
@@ -67,15 +66,35 @@ docker run \
     ai-models
 ```
 
+### Run unit tests
+
+The folder `src/tests` contains unit tests. You can run all unit tests together:
+
+```
+cd src
+python -m unittest discover -s tests
+```
+
+Or you can run an individual test:
+
+```
+python -m unittest tests.test_temporal_normalizer_english
+```
+
 ## Architecture
+
+### System architecture
+
+Please refer to the [PotatoBot documentation](https://github.com/potatobot-rwanda/potatobot?tab=readme-ov-file#architecture-high-level-overview) for an overview over the system architecture.
 
 ### AI Models Overview
 
 <img src="https://github.com/potatobot-rwanda/ai-models/blob/main/images/NER-NEC-NEL.drawio.png" width="400">
 
-The detection of locations, temporal expressions and potatoes works in three stages:
+The image shows the information flow:
 
-1. Named Entity Detection to detect spans in the text that contain named entities.
-2. Named Entitiy Classification to classify the span as potato, location or named temporal expression.
-3. Named Entitiy Normalization to normalize temporal expressions or Named Entity Linking to link a named entity to the knowledge base
+1. Entity Detection to detect spans in the text that contain named entities. Currently, the ER system implemented using LLMs. If time permits, we can also train a second Entity Recognition that uses transformers.
+2. Temporal Expression Analysis transforms the detected temporal expressions (e.g., "Last month") to a machine readable format (e.g., 1.8.2025-31.8.2025).
+3. Link potato varieties accepts a potato name as an input and return the ID of that potato variety from the database. It also takes spelling variations into account. 
+4. Link locations accepts as input the name of the location in the database and returns the ID of the location from the database, taking spelling variations into account. It can also retrieve multiple locations. To disambiguate between multiple matches, one can provide an additional context, e.g., the name of the sector, to link locations.
 
